@@ -38,11 +38,11 @@ public class ConnectionSettings {
     private int connectionTimeout;
 
     /**
-     * 未经证实ipdus收到最大数
+     * 收到多少 I 帧 回复一帧 S 帧
      */
     private int maxUnconfirmedIPdusReceived;
     /**
-     * 未支付的;ipdus最大数
+     * 发送确认变量的最大差异发送序列号的数目(最小值为1，最大值为32767)
      */
     private int maxNumOfOutstandingIPdus;
 
@@ -52,7 +52,7 @@ public class ConnectionSettings {
         this.cotFieldLength = 2;
         this.commonAddressFieldLength = 2;
         this.ioaFieldLength = 3;
-        this.connectionTimeout = 30_000;
+        this.connectionTimeout = 5_000;
         this.maxTimeNoAckReceived = 15_000;
         this.maxTimeNoAckSent = 10_000;
         this.maxIdleTime = 20_000;

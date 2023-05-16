@@ -2,7 +2,7 @@ package cn.liyohe.j60870;
 
 import cn.liyohe.j60870.codec.MessageDecoder;
 import cn.liyohe.j60870.codec.MessageEncoder;
-import cn.liyohe.j60870.handler.MessageProcessHandler;
+import cn.liyohe.j60870.handler.*;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -29,11 +29,19 @@ public class MasterStation {
 
     private final ConnectionSettings settings;
 
+    private Bootstrap bootstrap;
+
     private final NioEventLoopGroup group = new NioEventLoopGroup(1);
 
-    public void connect() throws InterruptedException {
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(group)
+    private MasterStation(Builder builder) {
+        this.address = builder.address == null ? "127.0.0.1" : builder.address;
+        this.port = builder.port == 0 ? DEFAULT_PORT : builder.port;
+        this.settings = builder.settings;
+        initNetty();
+    }
+
+    private void initNetty() {
+        bootstrap = new Bootstrap().group(group)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, settings.getConnectionTimeout())
                 .handler(new ChannelInitializer<SocketChannel>() {
@@ -41,14 +49,21 @@ public class MasterStation {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         // 添加IdleStateHandler，设置超时时间为5秒
-                        pipeline.addLast(new IdleStateHandler(settings.getMaxIdleTime(), 0, 0, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(0, 0, settings.getMaxIdleTime(), TimeUnit.MILLISECONDS));
                         pipeline.addLast(new MessageDecoder(settings));
                         pipeline.addLast(new MessageEncoder(settings));
-                        pipeline.addLast(new MessageProcessHandler());
+                        pipeline.addLast(new ConnectionSettingsHandler(settings));
+                        pipeline.addLast(new ConnectionInitHandler());
+                        pipeline.addLast(new StartConHandler());
+                        pipeline.addLast(new StartActHandler());
+                        pipeline.addLast(new StopConHandler());
+                        pipeline.addLast(new StopActHandler());
+                        pipeline.addLast(new TestConHandler());
+                        pipeline.addLast(new TestActHandler());
+                        pipeline.addLast(new IFrameHandler());
+                        pipeline.addLast(new SFrameHandler());
                     }
-                })
-                .connect(address, port)
-                .sync();
+                });
     }
 
     public void close() {
@@ -59,11 +74,14 @@ public class MasterStation {
         return new MasterStation.Builder();
     }
 
-
-    private MasterStation(Builder builder) {
-        this.address = builder.address == null ? "127.0.0.1" : builder.address;
-        this.port = builder.port == 0 ? DEFAULT_PORT : builder.port;
-        this.settings = builder.settings;
+    public void connect() throws InterruptedException {
+        bootstrap
+                .connect(address, port)
+                .sync()
+                // 监听关闭连接事件
+                .channel().closeFuture().addListener(f -> {
+                    group.shutdownGracefully();
+                });
     }
 
     public static class Builder extends CommonBuilder<Builder, MasterStation> {

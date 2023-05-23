@@ -21,8 +21,8 @@ public class ConnectionInitHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
+        // 构建ByteBuf直接写入 channel 不经过编码器处理
         ByteBuf buffer = Unpooled.wrappedBuffer(STARTDT_ACT_BUFFER);
-        // 直接写入数据
         ctx.writeAndFlush(buffer);
         System.out.println("发送启动链路请求:" + HexUtils.bytesToHex(STARTDT_ACT_BUFFER));
     }

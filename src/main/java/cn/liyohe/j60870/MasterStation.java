@@ -12,8 +12,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -88,7 +86,7 @@ public class MasterStation {
         private String address;
         private int port;
 
-        public Builder withAddress(String address) throws UnknownHostException {
+        public Builder withAddress(String address){
             this.address = address;
             return this;
         }
@@ -99,7 +97,7 @@ public class MasterStation {
         }
 
         @Override
-        public MasterStation build() throws IOException {
+        public MasterStation build(){
             return new MasterStation(this);
         }
 

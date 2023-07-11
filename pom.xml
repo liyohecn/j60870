@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netty.version>4.1.92.Final</netty.version>
         <j69879.version>1.5.0</j69879.version>
+        <slf4j.version>2.0.7</slf4j.version>
     </properties>
 
     <dependencies>
@@ -27,6 +28,13 @@
             <artifactId>j60870</artifactId>
             <version>${j69879.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
     </dependencies>
 
 

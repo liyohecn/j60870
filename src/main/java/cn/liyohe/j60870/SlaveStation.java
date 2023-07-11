@@ -1,7 +1,6 @@
 package cn.liyohe.j60870;
 
 
-import cn.liyohe.j60870.handler.ConnectionCounterHandler;
 import cn.liyohe.j60870.handler.WhitelistHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -58,7 +57,6 @@ public class SlaveStation {
                         if (whitelist != null && whitelist.size() > 0) {
                             pipeline.addLast(new WhitelistHandler(whitelist));
                         }
-                        pipeline.addLast(new ConnectionCounterHandler(maxConnections));
                     }
                 })
                 .bind(bindAddr, port)

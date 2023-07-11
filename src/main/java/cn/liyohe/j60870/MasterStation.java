@@ -1,7 +1,6 @@
 package cn.liyohe.j60870;
 
-import cn.liyohe.j60870.codec.MessageDecoder;
-import cn.liyohe.j60870.codec.MessageEncoder;
+import cn.liyohe.j60870.codec.MessageCodec;
 import cn.liyohe.j60870.handler.*;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -46,10 +45,12 @@ public class MasterStation {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+                        // 设置 粘包/拆包 处理器
+                        pipeline.addLast(new LengthFieldFrameHandler());
                         // 添加IdleStateHandler，设置超时时间为5秒
-                        pipeline.addLast(new IdleStateHandler(0, 0, settings.getMaxIdleTime(), TimeUnit.MILLISECONDS));
-                        pipeline.addLast(new MessageDecoder(settings));
-                        pipeline.addLast(new MessageEncoder(settings));
+                        pipeline.addLast(new IdleStateHandler(settings.getMaxIdleTime(), settings.getMaxIdleTime(), settings.getMaxIdleTime(), TimeUnit.MILLISECONDS));
+                        // 设置编解码器
+                        pipeline.addLast(new MessageCodec(settings));
                         pipeline.addLast(new ConnectionSettingsHandler(settings));
                         pipeline.addLast(new ConnectionInitHandler());
                         pipeline.addLast(new StartConHandler());
@@ -86,7 +87,7 @@ public class MasterStation {
         private String address;
         private int port;
 
-        public Builder withAddress(String address){
+        public Builder withAddress(String address) {
             this.address = address;
             return this;
         }
@@ -97,7 +98,7 @@ public class MasterStation {
         }
 
         @Override
-        public MasterStation build(){
+        public MasterStation build() {
             return new MasterStation(this);
         }
 
